@@ -1,0 +1,6 @@
+AuthType Basic
+AuthName "Restricted Files"
+# (Following line optional)
+AuthBasicProvider file
+AuthUserFile /usr/local/apache/passwd/passwords
+Require user test

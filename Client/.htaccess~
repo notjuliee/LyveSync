@@ -1,0 +1,4 @@
+AuthName "test"
+AuthType Basic
+AuthUserFile /home/ubuntu/LyveSync/.htpasswd
+require valid-user

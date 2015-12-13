@@ -1,0 +1,200 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <title>Lyve sync photo select</title>
+    <a href="http://www.mylyve.com"><img height=62 width=119 src="http://www.digitalfishfun.com/files/LyveLogo.jpeg" style="position:fixed; bottom:42; right:0;"></img></a>
+    <a href="http://www.mylyve.com/downloads/android"><img height=42 width=119 src="http://www.digitalfishfun.com/files/Gplay.png" style="position:fixed; bottom:0; right:0;"></img></a>
+  </head>
+
+  <body style="background:black;">
+    <center>
+    <input type="text" id="capt" placeholder="Caption" value="" style="position:fixed; top:0; left:0;"></input>
+    <br/>
+    <input type="text" id="sendto" placeholder="Recipient" value=""></input><button onclick="sendLink();">Send Link</button>
+    <table id="main_table" class="table table-striped table-condensed">
+<!--       <tr>
+	   <th></th>
+	   <th>sizes</th>
+	   <th>experience_ms</th>
+	   <th>experience_iso</th>
+	   <th>location</th>
+      </tr>
+ -->      <tr id="mainrow">
+	
+	<td id="template"><a id="xllink" href="http://placehold.it/1920x1440&text=loading"><img src="http://placehold.it/512x384&text=loading"/></a><div id="xtime">experience time</div><div id="xtime_iso">experience time ISO</div></td>
+                
+      </tr>
+    </table>
+    </center>
+      <nav>
+	  <ul class="pager">
+	    <li><a id="pager" href="#">Load more</a></li>
+	  </ul>
+	</nav>
+  </body>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+	<script>
+	var shouldUpdate = true;
+	var i=1
+	var pt = null;
+	var	stack = "dogfood"
+    var meshId = "AF47075B-23CE-41BC-A428-E486D706D62E"
+    var meshId = "FFB90C01-4357-4D02-9291-F80D24BFF536"
+    var partnerId = "dish"
+    var limit = "50"
+    var cscroll = 0;
+    var ssid = meshId;
+    var cday = 313958;
+    var cmon = 451526;
+    var cyea = 986418;
+    var cColor = 0;
+    var tmpCOlor = 6;
+    var useColors = ['Lime','Magenta','Yellow','Orange','Red','Steelblue']
+    UUIDv4 = function b(a){return a?(a^Math.random()*16>>a/4).toString(16):([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,b)}
+    if (document.cookie=="") {
+	document.cookie=UUIDv4();
+    }
+    ssid = document.cookie;
+
+    function askDia(fwrd) {
+    	dia = document.getElementById("capt").value;
+    	document.location.href = fwrd+'&dia='+dia+'&mid='+ssid;
+    }
+    
+    function sendLink() {
+	tmail = document.getElementById("sendto").value;
+	if (tmail!="") {
+	    window.open("http://www.digitalfishfun.com:8080/mail?ssid="+ssid+"&addr="+tmail);
+	}
+    }
+
+    $(window).scroll(function(){
+	limit = "20";
+	var height = $(window).scrollTop();
+	if (height%15==0) {
+	    if (height>cscroll && shouldUpdate) {
+	        cscroll = height;
+	        callApi()
+	    }
+	}
+    });
+
+    $(document).ready(function(){
+	if (isIe) {
+	    document.write('<h1>Nobody likes IE user.<br/>Fudge off!</h1>');
+	}
+        var shouldUpdate = true;
+	document.getElementById("sendto").value = "";
+	document.getElementById("capt").value = "";
+    	var tempMesh = prompt("Enter your mesh ID\n(Leave blank to use demo)")
+    	if (tempMesh != '') {
+    		meshId = tempMesh;
+    	}
+		var template = $('#template').clone()
+		
+		$('#main_table').find('#mainrow').remove();
+		
+		callApi();
+
+		$('#pager').click(function() {
+			callApi();
+			return false;
+		})
+			
+
+		
+	});
+	
+	function callApi() {
+	       if (shouldUpdate) {
+	        shouldUpdate = false;
+		var url = 'https://hermes.' + stack + '.blackpearlsystems.net/v1/media?mesh_id=' + meshId;
+	        console.log(url);
+		if (limit) {
+			url += "&limit=" + limit;
+		}
+		
+		if (pt) {
+			url += "&paging_token=" + pt;
+		}
+		
+		console.log(url)
+		
+		$.getJSON(url, function(data){
+			
+			if (data.paging_token) {
+				pt = data.paging_token
+			} else {
+ 				$('#pager').hide()
+			}
+
+			data.media.forEach(function(entry) {
+				console.log(entry)
+				var tr = $('<div>')
+	                        var mo = false;
+	                        if (entry.small) {
+					var mo = entry.small
+				}
+				if (entry.medium) {
+					var mo = entry.medium
+				}
+				if (entry.large) {
+					var mo = entry.large
+				}
+	                        if (entry.extra_large) {
+	                                var mo = entry.extra_large;
+	                        }
+	                        if (mo) {
+	                            tmpurl = 'http://www.digitalfishfun.com:8080/push?type=' + entry.mime_type + '&url=' + mo.url + '';
+	                        
+    	                            var tmpyea = entry.experience_time_iso8601.substring(0,4);
+                                    var tmpmon = entry.experience_time_iso8601.substring(5,7);
+	                            var tmpday = entry.experience_time_iso8601.substring(8,10);
+
+	                            if (tmpyea!=cyea || tmpmon!=cmon || tmpday!=cday) {
+	                                cyea = tmpyea;
+	                                cmon = tmpmon;
+	                                cday = tmpday;
+	                                console.log(cyea,cmon,cday);
+	                                td = $('<div style="background:' + useColors[cColor] +'; height:30px; width:100%; float:left; margin-top:0px;">');
+	                                td.append('<h4 style="color:white; vertical-align:middle; text-align:center;">' + cmon + '/' + cday + ' ' + cyea + '</h4>');
+		                        tr.append(td);
+	                                cColor++;
+                                        if (cColor==6) {
+	                                    cColor = 0;
+                                        }
+	                            }
+
+		                }
+	                        else {
+	                            console.log("ERROR ERROR ERROR ERROR",entry);
+	                        }
+
+	                        tmpColor = cColor-1;
+	                        if (tmpColor==-1) {
+	                            tmpColor = 5;
+	                        }
+				td = $('<div style="float:left;">')
+		                if (mo && mo.url!="undefined") {
+				    td.append('<div><a href=javascript:askDia("' + tmpurl + '")><img width="' + 150*(mo.width_px/mo.height_px) + '" height="150" src="' + mo.url + '" style="outline: 3px solid ' + useColors[tmpColor] + ';"/></a></div>');
+		                }
+		                else {
+		                    td.append('<div><img src="http://www.placehold.it/150x150?text=N/A" style="outline: 3px solid ' + useColors[tmpColor] + ';""/></div>');
+		                }
+				tr.append(td)
+				
+				$('#main_table').append(tr)
+				i++;
+	                });
+		if (data.paging_token) {
+		    shouldUpdate = true;
+		}
+		});
+	}
+	}
+		
+	</script> 
+</html>
